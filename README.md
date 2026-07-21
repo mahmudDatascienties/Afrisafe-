@@ -121,68 +121,13 @@ Technologies used:
 ## Clone Repository
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/afrisafe-ai.git
+git clone https://github.com/mahmudmukhtarhassan/afrisafe-ai.git
 
 cd afrisafe-ai
 ```
 
 ---
 
-## Create Virtual Environment
-
-Windows
-
-```bash
-python -m venv venv
-
-venv\Scripts\activate
-```
-
-Linux / macOS
-
-```bash
-python3 -m venv venv
-
-source venv/bin/activate
-```
-
----
-
-## Install Dependencies
-
-```bash
-pip install -r requirements.txt
-```
-
----
-
-# ▶️ Run Backend
-
-```bash
-cd backend
-
-uvicorn app.main:app --reload
-```
-
-Backend URL
-
-```
-http://127.0.0.1:8000
-```
-
-Swagger Documentation
-
-```
-http://127.0.0.1:8000/docs
-```
-
-Health Endpoint
-
-```
-http://127.0.0.1:8000/health
-```
-
----
 
 # 📡 API Example
 
@@ -287,26 +232,6 @@ The application includes:
 
 Contributions are welcome!
 
-1. Fork the repository
-
-2. Create a feature branch
-
-```bash
-git checkout -b feature/new-feature
-```
-
-3. Commit changes
-
-```bash
-git commit -m "Add new feature"
-```
-
-4. Push
-
-```bash
-git push origin feature/new-feature
-```
-
 5. Open a Pull Request
 
 ---
@@ -328,13 +253,10 @@ Founder & AI Engineer
 Data Scientist | Machine Learning Engineer | Full Stack Developer
 
 GitHub:
-https://github.com/YOUR_USERNAME
-
-LinkedIn:
-https://linkedin.com/in/YOUR_PROFILE
+https://github.com/mahmudmukhtarhassan
 
 Email:
-YOUR_EMAIL@example.com
+mahmudmukhtarhassan.com
 
 ---
 
@@ -347,7 +269,8 @@ Special thanks to:
 - Scikit-Learn
 - Python Community
 - 3MTT Nigeria
-- DeepTech Ready
+- 3MTT Nextgen
+- Blue Sapphire Hub
 - Kaggle Community
 
 ---
