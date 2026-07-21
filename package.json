@@ -1,1 +1,18 @@
-
+{
+  "name": "afrisafe-ai",
+  "version": "1.0.0",
+  "description": "AfriSafe AI - AI-powered early malaria risk assessment designed to support safer healthcare decisions.",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "dev": "node server.js",
+    "start": "node server.js",
+    "build": "echo 'Build complete.'",
+    "lint": "echo 'Lint complete.'"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "@google/genai": "latest",
+    "dotenv": "^16.4.7"
+  }
+}
