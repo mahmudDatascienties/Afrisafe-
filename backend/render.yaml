@@ -1,1 +1,6 @@
-
+services:
+  - type: web
+    name: malaria-triage-api
+    env: docker
+    plan: free
+    rootDir: backend
