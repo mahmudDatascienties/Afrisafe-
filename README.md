@@ -12,7 +12,7 @@
 
 # 📖 Overview
 
-AfriSafe AI is an intelligent healthcare application that predicts the likelihood of malaria infection using Machine Learning.
+AfriSafe AI is an AI-powered malaria symptom triage application that uses Machine Learning and FastAPI to assess malaria risk based on user-reported symptoms. It provides confidence scores, risk levels, and evidence-based recommendations to support early health awareness. This project is intended as a decision-support tool and not as a replacement for professional medical diagnosis.
 
 The platform allows users to:
 
