@@ -11,3 +11,12 @@ from app.database import Base
 from app.database import engine
 
 import app.models.user
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+
+    Base.metadata.create_all(bind=engine)
+
+    ml_service.load_model()
+
+    yield
