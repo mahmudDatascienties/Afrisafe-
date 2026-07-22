@@ -1,79 +1,42 @@
-import pandas as pd
+import numpy as np
+from app.utils.model_loader import get_model
+from app.schemas.prediction import SymptomAssessmentRequest, PredictionResult
 
-from utils.model_loader import ml_model
-from schemas.request import PredictionRequest
-from schemas.response import PredictionResponse
+class PredictionService:
+    @staticmethod
+    def predict_malaria(payload: SymptomAssessmentRequest) -> PredictionResult:
+        model = get_model("malaria_model")
+        
+        # Prepare feature vector base on trained order
+        features = [
+            payload.fever,
+            payload.headache,
+            payload.chills,
+            payload.fatigue,
+            payload.nausea,
+            payload.joint_pain,
+            payload.age,
+            payload.duration_days
+        ]
+        
+        # Calculate prediction probability
+        prob = model.predict_proba([features])[0][1] if hasattr(model, "predict_proba") else float(model.predict([features])[0])
+        has_malaria = prob >= 0.5
+        
+        # Assign risk levels
+        if prob < 0.3:
+            risk_level = "Low"
+            recommendations = ["Monitor symptoms", "Stay hydrated"]
+        elif prob < 0.7:
+            risk_level = "Moderate"
+            recommendations = ["Visit a local clinic for RDT (Rapid Diagnostic Test)", "Get adequate rest"]
+        else:
+            risk_level = "High"
+            recommendations = ["Seek immediate medical attention at the nearest hospital", "Do not self-medicate"]
 
-
-def _get_urgency(probability: float) -> str:
-    """Determine urgency level from prediction probability."""
-    if probability >= 0.70:
-        return "High"
-    elif probability >= 0.30:
-        return "Medium"
-    return "Low"
-
-
-def _get_recommendation(urgency: str) -> str:
-    """Return recommendation based on urgency level."""
-
-    recommendations = {
-        "High": (
-            "Visit the nearest health facility immediately. "
-            "This tool is for screening only and is not a medical diagnosis."
-        ),
-        "Medium": (
-            "Monitor your symptoms and seek medical attention if they worsen. "
-            "Consider visiting a healthcare provider."
-        ),
-        "Low": (
-            "Current risk appears low. Continue monitoring your symptoms. "
-            "If symptoms persist or worsen, consult a healthcare provider."
-        ),
-    }
-
-    return recommendations[urgency]
-
-
-def predict(data: PredictionRequest) -> PredictionResponse:
-    """
-    Perform malaria prediction using the trained ML model.
-    """
-
-    input_data = {
-        "age": data.age,
-        "gender": data.gender,
-        "state": data.state,
-        "fever": data.fever,
-        "high_fever": data.high_fever,
-        "headache": data.headache,
-        "chills": data.chills,
-        "vomiting": data.vomiting,
-        "duration": data.duration,
-    }
-
-    # Create DataFrame
-    df = pd.DataFrame([input_data])
-
-    # One-hot encode categorical variables
-    df = pd.get_dummies(df)
-
-    # Ensure feature order matches training
-    df = df.reindex(columns=ml_model.feature_names, fill_value=0)
-
-    # Prediction
-    prediction = ml_model.model.predict(df)[0]
-    probability = float(ml_model.model.predict_proba(df)[0][1])
-
-    prediction_label = "Malaria" if prediction == 1 else "No Malaria"
-
-    urgency = _get_urgency(probability)
-
-    recommendation = _get_recommendation(urgency)
-
-    return PredictionResponse(
-        prediction=prediction_label,
-        probability=round(probability, 4),
-        urgency=urgency,
-        recommendation=recommendation,
-    )
+        return PredictionResult(
+            has_malaria=has_malaria,
+            risk_score=round(float(prob), 2),
+            risk_level=risk_level,
+            recommendations=recommendations
+        )
