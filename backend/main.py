@@ -1,22 +1,38 @@
-from app.database.database import Base, engine
-from app.database import models
+from contextlib import asynccontextmanager
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
-Base.metadata.create_all(bind=engine)
-
-from app.routes.auth import router as auth_router
-
-app.include_router(auth_router)
-
-from app.database import Base
-from app.database import engine
-
-import app.models.user
+from app.core.config import settings
+from app.utils.model_loader import load_ml_models, clear_ml_models
+from app.api import auth, prediction
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-
-    Base.metadata.create_all(bind=engine)
-
-    ml_service.load_model()
-
+    # Lock/Load resources lokacin startup
+    load_ml_models()
     yield
+    # Cleanup resources lokacin shutdown
+    clear_ml_models()
+
+app = FastAPI(
+    title=settings.PROJECT_NAME,
+    version="1.0.0",
+    lifespan=lifespan
+)
+
+# CORS Setup
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Routers
+app.include_router(auth.router, prefix="/api/v1/auth", tags=["Auth"])
+app.include_router(prediction.router, prefix="/api/v1/prediction", tags=["Prediction"])
+
+@app.get("/health", tags=["Health"])
+def health_check():
+    return {"status": "healthy", "service": settings.PROJECT_NAME}
