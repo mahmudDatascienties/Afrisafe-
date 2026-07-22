@@ -1,31 +1,10 @@
-from typing import Literal
+from pydantic import BaseModel
+from typing import Generic, TypeVar, Optional
 
-from pydantic import BaseModel, Field
+T = TypeVar('T')
 
-
-class PredictionResponse(BaseModel):
-    """
-    Response schema returned after prediction.
-    """
-
-    prediction: Literal["Malaria", "No Malaria"] = Field(
-        ...,
-        description="Predicted class"
-    )
-
-    probability: float = Field(
-        ...,
-        ge=0.0,
-        le=1.0,
-        description="Prediction probability"
-    )
-
-    urgency: Literal["Low", "Medium", "High"] = Field(
-        ...,
-        description="Risk level"
-    )
-
-    recommendation: str = Field(
-        ...,
-        description="Medical recommendation"
-    )
+class APIEnvelope(BaseModel, Generic[T]):
+    success: bool = True
+    message: str = "Operation completed successfully"
+    data: Optional[T] = None
+    error: Optional[str] = None
