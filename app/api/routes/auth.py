@@ -7,13 +7,13 @@ from sqlalchemy.orm import Session
 
 from app.core.logging import get_logger
 from app.database.session import get_db
-from app.dependencies.auth import get_current_user
+from app.dependencies.auth import get_current_active_user, get_current_user
 from app.models.user import User
 from app.schemas.auth import (
     MessageResponse,
     RefreshRequest,
-    Token,
     TokenRefreshed,
+    TokenWithUser,
     UserLogin,
     UserOut,
     UserRegister,
@@ -27,27 +27,42 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 @router.post(
     "/register",
-    response_model=Token,
+    response_model=TokenWithUser,
     status_code=status.HTTP_201_CREATED,
     summary="Register a new user",
-    description="Create a new user account and return JWT access + refresh tokens.",
+    description=(
+        "Create a new user account. Validates email, rejects duplicates, "
+        "hashes the password with bcrypt, and returns JWT access + refresh "
+        "tokens along with the user profile."
+    ),
 )
-def register(payload: UserRegister, db: Session = Depends(get_db)) -> Token:
+def register(payload: UserRegister, db: Session = Depends(get_db)) -> TokenWithUser:
     service = AuthService(db)
     user, access, refresh = service.register(payload)
-    return Token(access_token=access, refresh_token=refresh)
+    return TokenWithUser(
+        access_token=access,
+        refresh_token=refresh,
+        user=UserOut.model_validate(user),
+    )
 
 
 @router.post(
     "/login",
-    response_model=Token,
+    response_model=TokenWithUser,
     summary="Login",
-    description="Authenticate with email + password and receive JWT tokens.",
+    description=(
+        "Authenticate with email + password. Returns JWT access + refresh "
+        "tokens and the authenticated user's profile."
+    ),
 )
-def login(payload: UserLogin, db: Session = Depends(get_db)) -> Token:
+def login(payload: UserLogin, db: Session = Depends(get_db)) -> TokenWithUser:
     service = AuthService(db)
     user, access, refresh = service.login(payload)
-    return Token(access_token=access, refresh_token=refresh)
+    return TokenWithUser(
+        access_token=access,
+        refresh_token=refresh,
+        user=UserOut.model_validate(user),
+    )
 
 
 @router.post(
@@ -84,4 +99,14 @@ def logout(
     description="Return the authenticated user's profile.",
 )
 def me(current_user: User = Depends(get_current_user)) -> User:
+    return current_user
+
+
+@router.get(
+    "/me/active",
+    response_model=UserOut,
+    summary="Current active user",
+    description="Return the authenticated user's profile (active check).",
+)
+def me_active(current_user: User = Depends(get_current_active_user)) -> User:
     return current_user

@@ -41,6 +41,16 @@ def get_current_user(
     return user
 
 
+def get_current_active_user(user: User = Depends(get_current_user)) -> User:
+    """Return the current user, ensuring the account is active.
+
+    ``get_current_user`` already checks ``is_active``, so this dependency
+    exists as a separately-named guard for endpoints that want to express the
+    *active* requirement explicitly in their dependency chain.
+    """
+    return user
+
+
 def get_current_admin(user: User = Depends(get_current_user)) -> User:
     """Require the authenticated user to have the ``admin`` role."""
     if user.role != "admin":

@@ -71,6 +71,36 @@ class Token(BaseModel):
     token_type: Literal["bearer"] = "bearer"
 
 
+class TokenWithUser(BaseModel):
+    """JWT tokens plus the authenticated user's profile."""
+
+    access_token: str = Field(..., description="Short-lived JWT access token")
+    refresh_token: str = Field(..., description="Long-lived JWT refresh token")
+    token_type: Literal["bearer"] = "bearer"
+    user: UserOut = Field(..., description="Authenticated user profile")
+
+    model_config = ConfigDict(json_schema_extra={
+        "example": {
+            "access_token": "eyJhbGciOi...",
+            "refresh_token": "eyJhbGciOi...",
+            "token_type": "bearer",
+            "user": {
+                "id": 1,
+                "full_name": "Ada Okonkwo",
+                "email": "ada@example.com",
+                "state": "Lagos",
+                "lga": "Ikeja",
+                "age": 28,
+                "gender": "Female",
+                "phone_number": "+2348000000000",
+                "role": "user",
+                "is_active": True,
+                "created_at": "2026-07-23T09:00:00Z",
+            },
+        }
+    })
+
+
 class RefreshRequest(BaseModel):
     """Payload for token refresh."""
 

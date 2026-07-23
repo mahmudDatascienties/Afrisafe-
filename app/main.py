@@ -86,12 +86,25 @@ app.include_router(admin_router, prefix=api_prefix)
 # --- Health & root ---
 @app.get("/api/v1/health", tags=["System"], summary="Health check")
 def health_check() -> dict[str, str | bool | int]:
-    """Report service status and whether the ML model is loaded."""
+    """Report service status, database connectivity, and ML model state."""
+    from sqlalchemy import text
+
+    from app.database.session import engine
     from app.ml.model_service import MLModel
 
     model = MLModel()
+
+    db_status = "connected"
+    try:
+        with engine.connect() as conn:
+            conn.execute(text("SELECT 1"))
+    except Exception:
+        db_status = "disconnected"
+
+    overall = "ok" if (model.loaded and db_status == "connected") else "degraded"
     return {
-        "status": "ok" if model.loaded else "degraded",
+        "status": overall,
+        "database_status": db_status,
         "model_loaded": model.loaded,
         "feature_names_count": len(model.feature_names),
         "version": settings.APP_VERSION,
