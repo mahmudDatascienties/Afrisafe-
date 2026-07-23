@@ -1,0 +1,17 @@
+# AfriSafe AI - Docker Compose
+# Run with: docker compose up --build
+
+services:
+  api:
+    build: .
+    container_name: afrisafe-api
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      - ENVIRONMENT=production
+      - DEBUG=False
+    volumes:
+      - ./Model:/app/Model:ro
+    restart: unless-stopped

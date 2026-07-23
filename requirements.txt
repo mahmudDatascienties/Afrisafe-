@@ -1,0 +1,31 @@
+# AfriSafe AI - Python dependencies
+# Core
+fastapi==0.139.2
+uvicorn[standard]==0.51.0
+python-dotenv==1.2.2
+
+# Settings & validation
+pydantic==2.13.4
+pydantic-settings==2.14.2
+email-validator==2.3.0
+
+# Database
+SQLAlchemy==2.0.51
+alembic==1.16.5
+
+# Auth
+python-jose[cryptography]==3.5.0
+passlib[bcrypt]==1.7.4
+bcrypt==4.2.1
+python-multipart==0.0.32
+
+# ML
+scikit-learn==1.9.0
+joblib==1.5.3
+numpy==2.5.1
+pandas==3.0.5
+
+# Testing
+pytest==8.4.2
+pytest-asyncio==1.2.0
+httpx==0.28.1

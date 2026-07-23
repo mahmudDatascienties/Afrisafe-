@@ -1,277 +1,129 @@
-# 🦟 AfriSafe AI – Malaria Symptom Triage Helper
+# AfriSafe AI
 
-![Python](https://img.shields.io/badge/Python-3.11-blue)
-![FastAPI](https://img.shields.io/badge/FastAPI-0.110-green)
-![Scikit-Learn](https://img.shields.io/badge/Scikit--Learn-ML-orange)
-![License](https://img.shields.io/badge/License-MIT-yellow)
-![Status](https://img.shields.io/badge/Status-Production%20Ready-success)
+An AI-powered Malaria Risk Prediction System for Nigeria.
 
-> An AI-powered malaria symptom assessment and triage system designed to help individuals understand their malaria risk before visiting a healthcare facility.
+## Overview
 
----
+AfriSafe AI uses a trained logistic regression model to estimate malaria
+likelihood from patient-reported symptoms and demographic data, then classifies
+the case into a triage risk level (Low / Medium / High) with tailored
+recommendations. The backend exposes a secure JWT-authenticated REST API with
+user registration, login, prediction, history, and an admin dashboard.
 
-# 📖 Overview
+## Tech Stack
 
-AfriSafe AI is an AI-powered malaria symptom triage application that uses Machine Learning and FastAPI to assess malaria risk based on user-reported symptoms. It provides confidence scores, risk levels, and evidence-based recommendations to support early health awareness. This project is intended as a decision-support tool and not as a replacement for professional medical diagnosis.
+- **Python 3.12** / **FastAPI** / **Uvicorn**
+- **SQLAlchemy 2.0** ORM with **Alembic** migrations
+- **SQLite** (development) / **PostgreSQL** (production)
+- **Pydantic v2** for validation
+- **JWT** auth (python-jose) + **bcrypt** hashing (passlib)
+- **scikit-learn** / **joblib** for ML inference
+- **pytest** for testing
 
-The platform allows users to:
-
-- Enter personal information
-- Select malaria symptoms
-- Receive an AI-powered malaria risk prediction
-- Get medical recommendations
-- Understand confidence level of prediction
-
-The goal is **early awareness**, **better decision making**, and **improved access to healthcare**, especially in underserved communities across Africa.
-
----
-
-# 🚀 Features
-
-- AI-powered malaria prediction
-- FastAPI REST API
-- Machine Learning inference
-- Modern frontend interface
-- Confidence score
-- Risk classification
-- Clinical recommendations
-- Health check endpoint
-- Swagger API documentation
-- Clean project architecture
-
----
-
-# 🏗 Project Architecture
+## Project Structure
 
 ```
-Frontend (HTML/CSS/JavaScript)
-           │
-           ▼
- FastAPI Backend
-           │
-           ▼
- Machine Learning Model (.pkl)
-           │
-           ▼
- Prediction Response
+backend/
+├── app/
+│   ├── api/
+│   │   └── routes/        # auth, prediction, admin routers
+│   ├── config/            # Pydantic BaseSettings
+│   ├── core/              # security, logging, exceptions
+│   ├── database/          # engine, session, Base
+│   ├── dependencies/      # current user / admin guards
+│   ├── middleware/        # rate limiting
+│   ├── ml/                # model loading + inference
+│   ├── models/            # SQLAlchemy ORM models
+│   ├── repositories/      # Repository Pattern data access
+│   ├── schemas/           # Pydantic v2 request/response models
+│   ├── services/          # business logic (auth, prediction, admin)
+│   ├── utils/             # helpers
+│   ├── logs/              # rotating log files
+│   └── main.py            # FastAPI entry point
+├── migrations/            # Alembic migrations
+├── Model/                 # malaria_model.pkl, feature_names.pkl
+├── tests/                 # pytest suite
+├── alembic.ini
+├── requirements.txt
+├── Dockerfile
+├── docker-compose.yml
+└── .env.example
 ```
 
----
+## Quick Start
 
-# 🧠 Machine Learning
-
-The prediction model was trained using malaria symptom data and exported as:
-
-```
-model.pkl
-```
-
-Technologies used:
-
-- Scikit-Learn
-- Pandas
-- NumPy
-- Joblib
-
----
-
-# ⚙️ Backend Technologies
-
-- FastAPI
-- Pydantic
-- Uvicorn
-- Joblib
-- Scikit-Learn
-- Pandas
-- NumPy
-
----
-
-# 💻 Frontend Technologies
-
-- HTML5
-- CSS3
-- JavaScript (ES6)
-
----
-
-# 📦 Installation
-
-## Clone Repository
+### Local development
 
 ```bash
-git clone https://github.com/mahmudmukhtarhassan/afrisafe-ai.git
-
-cd afrisafe-ai
+python -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env
+uvicorn app.main:app --reload
 ```
 
----
+The API is available at `http://localhost:8000`. Interactive docs at `/docs`.
 
-
-# 📡 API Example
-
-POST
-
-```
-/predict
-```
-
-Request
-
-```json
-{
-  "patient": {
-    "age": 25,
-    "gender": "Male",
-    "state": "Kano",
-    "lga": "Nassarawa"
-  },
-  "assessment": {
-    "symptoms": [
-      "fever",
-      "headache",
-      "chills"
-    ],
-    "durationDays": 3,
-    "recentMosquitoBites": true,
-    "recentTravel": false,
-    "takenMalariaDrugs": false
-  }
-}
-```
-
----
-
-Response
-
-```json
-{
-  "prediction": "Positive",
-  "risk": "High",
-  "confidence": 94.7,
-  "recommendation": "Visit the nearest health facility for malaria testing immediately.",
-  "advice": [
-    "Take a Rapid Diagnostic Test (RDT).",
-    "Drink enough water.",
-    "Avoid self-medication."
-  ]
-}
-```
-
----
-
-# 🧪 Running Tests
+### Docker
 
 ```bash
-pytest
+cp .env.example .env
+docker compose up --build
 ```
 
----
+## API Endpoints
 
-# 🔒 Security
+All routes are prefixed with `/api/v1`.
 
-Input validation is implemented using **Pydantic**.
+| Method | Path                        | Auth   | Description                          |
+|--------|-----------------------------|--------|--------------------------------------|
+| GET    | `/health`                   | None   | Health check + model load state      |
+| POST   | `/auth/register`            | None   | Register, returns JWT pair           |
+| POST   | `/auth/login`               | None   | Login, returns JWT pair              |
+| POST   | `/auth/refresh`             | None   | Refresh access token                 |
+| POST   | `/auth/logout`               | None   | Revoke refresh token                 |
+| GET    | `/auth/me`                  | User   | Current user profile                  |
+| POST   | `/prediction/predict`       | User   | Run malaria prediction + save history|
+| GET    | `/prediction/history`       | User   | List user's prediction history       |
+| DELETE | `/prediction/history/{id}`   | User   | Delete a prediction record           |
+| GET    | `/admin/users`              | Admin  | List all users                       |
+| GET    | `/admin/predictions`        | Admin  | List all predictions                 |
+| GET    | `/admin/statistics`         | Admin  | Aggregate platform statistics        |
 
-The application includes:
+## Database Migrations (Alembic)
 
-- Request validation
-- Error handling
-- Model initialization checks
-- Structured API responses
-- CORS protection
+```bash
+# Generate a new migration after model changes
+alembic revision --autogenerate -m "describe change"
 
----
+# Apply migrations
+alembic upgrade head
 
-# 🌍 Use Cases
-
-- Community healthcare
-- Rural clinics
-- Digital health platforms
-- Public health awareness
-- AI healthcare research
-- Malaria screening support
-
----
-
-# 📊 Future Improvements
-
-- Deep Learning model
-- Multi-disease prediction
-- Mobile application
-- Offline prediction
-- Hospital integration
-- Electronic Health Records (EHR)
-- User authentication
-- Cloud deployment
-- Analytics dashboard
-
----
-
-# 🤝 Contributing
-
-Contributions are welcome!
-
-5. Open a Pull Request
-
----
-
-# 📜 License
-
-This project is licensed under the MIT License.
-
----
-
-# 👨‍💻 Author
-
-## Mahmud Mukhtar Hassan
-
-Data Scientist | Machine Learning Engineer | Full Stack Developer
-
-GitHub:
-https://github.com/mahmudmukhtarhassan
-
-Email:
-mahmudmukhtarhassan.com
-
----
-
-# 🙏 Acknowledgements
-
-Special thanks to:
-
-- OpenAI
-- FastAPI
-- Scikit-Learn
-- Python Community
-- 3MTT Nigeria
-- 3MTT Nextgen
-- Blue Sapphire Hub
-- Kaggle Community
-
----
-
-# ⭐ Support
-
-If you found this project helpful, please give it a ⭐ on GitHub.
-
-It helps others discover the project and motivates future development.
-
----
-
-## 📈 Project Status
-
-✅ Active Development
-
-Version:
-
-```
-v1.0.0
+# Rollback one migration
+alembic downgrade -1
 ```
 
----
+> Note: in development, tables are auto-created on startup via `init_db()`.
+> In production, use Alembic migrations.
 
-## 🌍 Vision
+## Testing
 
-AfriSafe AI aims to leverage Artificial Intelligence to improve malaria awareness, support early risk assessment, and empower communities with accessible digital health tools across Africa.
+```bash
+pytest -v
+```
 
-> **Disclaimer:** AfriSafe AI is intended as a decision-support and educational tool. It does **not** replace professional medical diagnosis or treatment. Users should consult qualified healthcare professionals for medical advice.
+Tests cover authentication, JWT, prediction, and database layers.
+
+## Environment Variables
+
+See `.env.example` for all supported variables. Never commit the real `.env`.
+
+## Deployment
+
+The backend is deployable to Render, Railway, Azure, AWS, and Docker. Set the
+environment variables from `.env.example` in your hosting provider and run:
+
+```
+uvicorn app.main:app --host 0.0.0.0 --port 8000
+```
+
+For PostgreSQL, set `DATABASE_URL=postgresql+psycopg://user:pass@host:5432/db`.
