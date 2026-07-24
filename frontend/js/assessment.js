@@ -1,33 +1,35 @@
 /**
  * AfriSafe AI - Assessment Controller
- * Production-ready frontend logic handling multi-step workflow, accessibility state,
- * real-time validation, privacy filtering, and backend API integration.
+ * Multi-step workflow with real backend API integration.
  */
 
-document.addEventListener('DOMContentLoaded', () => {
-  // API Endpoint
-  const API_BASE_URL = window.location.origin;
+document.addEventListener("DOMContentLoaded", () => {
+  // Guard: must be logged in
+  if (!requireAuth()) return;
+
+  populateUserBadge();
+  wireLogout();
 
   // DOM Elements
-  const triageForm = document.getElementById('triageForm');
-  const progressBar = document.getElementById('progressBar');
-  const alertContainer = document.getElementById('alertContainer');
-  const loadingOverlay = document.getElementById('loadingOverlay');
-  const submitBtn = document.getElementById('submitBtn');
+  const triageForm = document.getElementById("triageForm");
+  const progressBar = document.getElementById("progressBar");
+  const alertContainer = document.getElementById("alertContainer");
+  const loadingOverlay = document.getElementById("loadingOverlay");
+  const submitBtn = document.getElementById("submitBtn");
 
   // Input Elements
-  const ageInput = document.getElementById('age');
-  const genderInput = document.getElementById('gender');
-  const stateInput = document.getElementById('state');
-  const lgaInput = document.getElementById('lga');
-  const fullNameInput = document.getElementById('fullName');
-  const durationSlider = document.getElementById('durationSlider');
-  const durationDisplay = document.getElementById('durationDisplay');
+  const ageInput = document.getElementById("age");
+  const genderInput = document.getElementById("gender");
+  const stateInput = document.getElementById("state");
+  const lgaInput = document.getElementById("lga");
+  const fullNameInput = document.getElementById("fullName");
+  const durationSlider = document.getElementById("durationSlider");
+  const durationDisplay = document.getElementById("durationDisplay");
 
   // Summary Elements
-  const summaryPatient = document.getElementById('summaryPatient');
-  const summaryLocation = document.getElementById('summaryLocation');
-  const summarySymptomTags = document.getElementById('summarySymptomTags');
+  const summaryPatient = document.getElementById("summaryPatient");
+  const summaryLocation = document.getElementById("summaryLocation");
+  const summarySymptomTags = document.getElementById("summarySymptomTags");
   const summaryRiskBadge = document.getElementById('summaryRiskBadge');
   const summaryStatus = document.getElementById('summaryStatus');
 
@@ -46,9 +48,6 @@ document.addEventListener('DOMContentLoaded', () => {
   initFormInteractions();
   updateLiveSummary();
 
-  /**
-   * Navigation Setup
-   */
   function initNavigation() {
     document.querySelectorAll('.btn-next').forEach(btn => {
       btn.addEventListener('click', (e) => {
@@ -72,12 +71,10 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.form-section').forEach(sec => sec.classList.add('hidden-section'));
     document.getElementById(`section-${step}`).classList.remove('hidden-section');
 
-    // Update Progress Step Indicators
     document.querySelectorAll('.step-item').forEach((item, index) => {
       item.classList.toggle('active', index + 1 <= step);
     });
 
-    // Update Accessibility and Fill Bar
     const progressPercent = step * 25;
     progressBar.style.width = `${progressPercent}%`;
     progressBar.setAttribute('aria-valuenow', progressPercent);
@@ -90,9 +87,6 @@ document.addEventListener('DOMContentLoaded', () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  /**
-   * Step Validations
-   */
   function validateStep(step) {
     let isValid = true;
 
@@ -139,14 +133,10 @@ document.addEventListener('DOMContentLoaded', () => {
     return isValid;
   }
 
-  /**
-   * UI Input Bindings & Card Handlers
-   */
   function initFormInteractions() {
-    // Card Clicks Toggle Switches
     document.querySelectorAll('.symptom-card').forEach(card => {
       card.addEventListener('click', (e) => {
-        if (e.target.closest('.switch')) return; // Avoid double toggle on switch element click
+        if (e.target.closest('.switch')) return;
         const checkbox = card.querySelector('.symptom-checkbox');
         checkbox.checked = !checkbox.checked;
         card.classList.toggle('selected', checkbox.checked);
@@ -162,14 +152,12 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     });
 
-    // Duration Slider
     durationSlider.addEventListener('input', (e) => {
       const val = e.target.value;
       durationDisplay.textContent = `${val} ${val === '1' ? 'Day' : 'Days'}`;
       updateLiveSummary();
     });
 
-    // Input Dynamic Updates
     [ageInput, genderInput, stateInput, fullNameInput, lgaInput].forEach(elem => {
       elem.addEventListener('input', updateLiveSummary);
       elem.addEventListener('change', updateLiveSummary);
@@ -183,14 +171,11 @@ document.addEventListener('DOMContentLoaded', () => {
     return Array.from(checked).map(cb => cb.value);
   }
 
-  /**
-   * Sidebar Live Summary Update
-   */
   function updateLiveSummary() {
     const age = ageInput.value.trim();
     const gender = genderInput.value;
     const name = fullNameInput.value.trim();
-    
+
     if (age && gender) {
       summaryPatient.textContent = `${name ? name + ' (' : ''}${age} yrs, ${gender}${name ? ')' : ''}`;
     } else {
@@ -207,7 +192,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const symptoms = getSelectedSymptoms();
     summarySymptomTags.innerHTML = '';
-    
+
     if (symptoms.length > 0) {
       symptoms.forEach(sym => {
         const tag = document.createElement('span');
@@ -221,7 +206,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const riskScore = calculateHeuristicRisk(symptoms);
     summaryRiskBadge.className = 'risk-badge';
-    
+
     if (riskScore >= 4) {
       summaryRiskBadge.textContent = 'High';
       summaryRiskBadge.classList.add('risk-high');
@@ -255,7 +240,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function updateReviewData() {
     reviewPatient.textContent = summaryPatient.textContent;
     reviewLocation.textContent = summaryLocation.textContent;
-    
+
     const symptoms = getSelectedSymptoms();
     reviewSymptoms.textContent = symptoms.length > 0 ? symptoms.join(', ') : 'None';
     reviewDuration.textContent = durationDisplay.textContent;
@@ -267,9 +252,6 @@ document.addEventListener('DOMContentLoaded', () => {
     reviewContext.textContent = `Bites: ${mosquito} | Travel: ${travelled} | Anti-malaria: ${drugs}`;
   }
 
-  /**
-   * Helper Error Display
-   */
   function showFieldError(id, msg) {
     const errorElem = document.getElementById(id);
     if (errorElem) errorElem.textContent = msg;
@@ -291,7 +273,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /**
-   * Form Submission & Production API Dispatcher
+   * Form Submission — calls POST /api/v1/prediction/predict with JWT auth.
    */
   async function handleFormSubmit(e) {
     e.preventDefault();
@@ -301,7 +283,6 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    // Secure Payload Creation (fullName excluded for privacy)
     const payload = {
       age: parseInt(ageInput.value, 10),
       gender: genderInput.value,
@@ -309,37 +290,33 @@ document.addEventListener('DOMContentLoaded', () => {
       lga: lgaInput.value.trim() || null,
       symptoms: getSelectedSymptoms(),
       duration: parseInt(durationSlider.value, 10),
-      mosquitoBites: document.querySelector('input[name="mosquitoBites"]:checked')?.value === 'Yes',
-      travelled: document.querySelector('input[name="travelled"]:checked')?.value === 'Yes',
-      malariaDrugs: document.querySelector('input[name="malariaDrugs"]:checked')?.value === 'Yes'
+      mosquito_exposure: document.querySelector('input[name="mosquitoBites"]:checked')?.value === 'Yes',
+      travel_history: document.querySelector('input[name="travelled"]:checked')?.value === 'Yes',
+      drug_history: document.querySelector('input[name="malariaDrugs"]:checked')?.value === 'Yes',
     };
 
-    // UI Busy Lock State
     setSubmitState(true);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/predict`, {
+      const result = await apiRequest('/api/v1/prediction/predict', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
       });
 
-      if (!response.ok) {
-        throw new Error(`Server status: ${response.status}`);
-      }
-
-      const result = await response.json();
-
-      // Persist Result & Redirect
+      // Persist result and inputs for the result page
       localStorage.setItem('triageResult', JSON.stringify(result));
       localStorage.setItem('patientInputs', JSON.stringify(payload));
       window.location.href = 'result.html';
-
     } catch (err) {
       console.error('API Prediction request error:', err);
-      showAlert('Unable to connect to the prediction server.');
+      if (err.status === 401) {
+        showToast("Session expired. Please log in again.", "error");
+        setTimeout(() => { window.location.href = "login.html"; }, 1500);
+      } else if (err.status === 422) {
+        showAlert(err.message || "Please check your input and try again.");
+      } else {
+        showAlert(err.message || "Unable to connect to the prediction server.");
+      }
       setSubmitState(false);
     }
   }

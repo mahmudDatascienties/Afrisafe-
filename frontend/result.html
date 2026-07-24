@@ -13,6 +13,9 @@
 
   <!-- Custom CSS -->
   <link rel="stylesheet" href="css/result.css">
+
+  <!-- jsPDF for client-side PDF generation -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
 
@@ -36,8 +39,10 @@
       </div>
 
       <nav class="nav-links" aria-label="Main Navigation">
-        <a href="login.html" class="nav-link">Home</a>
+        <a href="dashboard.html" class="nav-link">Dashboard</a>
         <a href="assessment.html" class="nav-link">Assessment</a>
+        <a href="history.html" class="nav-link">History</a>
+        <a href="profile.html" class="nav-link">Profile</a>
         <a href="result.html" class="nav-link active" aria-current="page">Result Report</a>
       </nav>
 
@@ -45,8 +50,9 @@
         <!-- User Session Badge -->
         <div class="user-badge" title="Active Session">
           <span class="status-dot" aria-hidden="true"></span>
-          <span class="user-text">Report Active</span>
+          <span class="user-text">User</span>
         </div>
+        <a href="#" id="logoutBtn" class="nav-link" style="color: var(--danger);">Logout</a>
       </div>
     </div>
   </header>
@@ -132,6 +138,7 @@
           </div>
           <div class="recommendation-content">
             <p id="recommendationText" class="recommendation-text">--</p>
+            <div id="adviceList"></div>
           </div>
         </article>
 
@@ -187,8 +194,8 @@
             <span>New Assessment</span>
           </a>
 
-          <a href="login.html" class="btn btn-tertiary btn-action-large">
-            <span>Back to Home</span>
+          <a href="dashboard.html" class="btn btn-tertiary btn-action-large">
+            <span>Back to Dashboard</span>
           </a>
         </div>
 
@@ -219,6 +226,7 @@
     </p>
   </footer>
 
+  <script src="js/config.js"></script>
   <script src="js/result.js"></script>
 </body>
 </html>

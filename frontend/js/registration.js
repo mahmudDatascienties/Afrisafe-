@@ -1,206 +1,145 @@
-// ===========================================
-// AfriSafe AI Registration
-// ===========================================
+/**
+ * AfriSafe AI - Registration Controller
+ * Real registration via backend API.
+ */
 
-const API_BASE_URL = "https://afrisafe-ai.onrender.com";
-// Development:
-// const API_BASE_URL = "http://127.0.0.1:8000";
+document.addEventListener("DOMContentLoaded", () => {
+  const form = document.getElementById("registerForm");
+  const registerBtn = document.getElementById("registerBtn");
+  const formAlert = document.getElementById("formAlert");
 
-const form = document.getElementById("registerForm");
-const registerBtn = document.getElementById("registerBtn");
-const formAlert = document.getElementById("formAlert");
+  const password = document.getElementById("password");
+  const confirmPassword = document.getElementById("confirm_password");
 
-const password = document.getElementById("password");
-const confirmPassword = document.getElementById("confirm_password");
+  const togglePassword = document.getElementById("togglePassword");
+  const toggleConfirmPassword = document.getElementById("toggleConfirmPassword");
 
-const togglePassword = document.getElementById("togglePassword");
-const toggleConfirmPassword = document.getElementById("toggleConfirmPassword");
+  // If already logged in, go to assessment
+  if (isLoggedIn()) {
+    window.location.href = "assessment.html";
+    return;
+  }
 
-// ===========================================
-// Alert
-// ===========================================
+  // Password Toggle
+  if (togglePassword) {
+    togglePassword.addEventListener("click", () => {
+      password.type = password.type === "password" ? "text" : "password";
+    });
+  }
 
-function showAlert(message, type = "error") {
+  if (toggleConfirmPassword) {
+    toggleConfirmPassword.addEventListener("click", () => {
+      confirmPassword.type = confirmPassword.type === "password" ? "text" : "password";
+    });
+  }
 
-    formAlert.style.display = "block";
-    formAlert.textContent = message;
+  // Registration Form Submit
+  if (form) {
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      hideInlineAlert("formAlert");
 
-    formAlert.className = "form-alert";
+      const full_name = document.getElementById("full_name").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const age = parseInt(document.getElementById("age").value, 10);
+      const gender = document.getElementById("gender").value;
+      const state = document.getElementById("state").value.trim();
+      const lga = document.getElementById("lga").value.trim();
+      const agree = document.getElementById("agreeTerms").checked;
 
-    if (type === "success") {
-        formAlert.classList.add("success");
-    } else {
-        formAlert.classList.add("error");
-    }
-}
-
-function hideAlert() {
-
-    formAlert.style.display = "none";
-
-}
-
-// ===========================================
-// Password Toggle
-// ===========================================
-
-togglePassword.addEventListener("click", () => {
-
-    password.type =
-        password.type === "password"
-            ? "text"
-            : "password";
-
-});
-
-toggleConfirmPassword.addEventListener("click", () => {
-
-    confirmPassword.type =
-        confirmPassword.type === "password"
-            ? "text"
-            : "password";
-
-});
-
-// ===========================================
-// Registration
-// ===========================================
-
-form.addEventListener("submit", async (e) => {
-
-    e.preventDefault();
-
-    hideAlert();
-
-    const full_name =
-        document.getElementById("full_name").value.trim();
-
-    const email =
-        document.getElementById("email").value.trim();
-
-    const age =
-        parseInt(document.getElementById("age").value);
-
-    const gender =
-        document.getElementById("gender").value;
-
-    const state =
-        document.getElementById("state").value.trim();
-
-    const lga =
-        document.getElementById("lga").value.trim();
-
-    const agree =
-        document.getElementById("agreeTerms").checked;
-
-    if (!agree) {
-
-        showAlert("Please accept Terms & Conditions.");
-
+      // Validation
+      if (!full_name) {
+        showInlineAlert("formAlert", "Please enter your full name.");
         return;
+      }
 
-    }
-
-    if (password.value.length < 8) {
-
-        showAlert("Password must contain at least 8 characters.");
-
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        showInlineAlert("formAlert", "Please enter a valid email address.");
         return;
+      }
 
-    }
-
-    if (password.value !== confirmPassword.value) {
-
-        showAlert("Passwords do not match.");
-
+      if (!age || age < 1 || age > 120) {
+        showInlineAlert("formAlert", "Please enter a valid age (1-120).");
         return;
+      }
 
-    }
+      if (!gender) {
+        showInlineAlert("formAlert", "Please select your gender.");
+        return;
+      }
 
-    registerBtn.disabled = true;
+      if (!state) {
+        showInlineAlert("formAlert", "Please enter your state.");
+        return;
+      }
 
-    registerBtn.innerHTML = "Creating Account...";
+      if (!lga) {
+        showInlineAlert("formAlert", "Please enter your Local Government Area.");
+        return;
+      }
 
-    try {
+      if (!agree) {
+        showInlineAlert("formAlert", "Please accept the Terms & Conditions.");
+        return;
+      }
 
-        const response = await fetch(
+      if (password.value.length < 6) {
+        showInlineAlert("formAlert", "Password must be at least 6 characters.");
+        return;
+      }
 
-            `${API_BASE_URL}/api/v1/auth/register`,
+      if (password.value !== confirmPassword.value) {
+        showInlineAlert("formAlert", "Passwords do not match.");
+        return;
+      }
 
-            {
+      registerBtn.disabled = true;
+      registerBtn.innerHTML = '<span class="btn-text">Creating Account...</span>';
 
-                method: "POST",
+      try {
+        const data = await apiRequest("/api/v1/auth/register", {
+          method: "POST",
+          body: JSON.stringify({
+            full_name,
+            email,
+            password: password.value,
+            age,
+            gender,
+            state,
+            lga,
+          }),
+        });
 
-                headers: {
-
-                    "Content-Type": "application/json"
-
-                },
-
-                body: JSON.stringify({
-
-                    full_name,
-
-                    email,
-
-                    password: password.value,
-
-                    age,
-
-                    gender,
-
-                    state,
-
-                    lga
-
-                })
-
-            }
-
-        );
-
-        const data = await response.json();
-
-        if (!response.ok) {
-
-            throw new Error(
-
-                data.detail ||
-
-                "Registration failed."
-
-            );
-
-        }
-
-        showAlert(
-
-            "Registration Successful! Redirecting...",
-
-            "success"
-
-        );
-
-        setTimeout(() => {
-
+        // Auto-login: store tokens if returned
+        if (data.access_token) {
+          setTokens(data.access_token, data.refresh_token);
+          if (data.user) setUser(data.user);
+          showInlineAlert("formAlert", "Account created! Redirecting...", "success");
+          showToast("Registration successful!", "success");
+          setTimeout(() => {
+            window.location.href = "assessment.html";
+          }, 1000);
+        } else {
+          showInlineAlert("formAlert", "Registration successful! Redirecting to login...", "success");
+          showToast("Registration successful!", "success");
+          setTimeout(() => {
             window.location.href = "login.html";
-
-        }, 1500);
-
-    }
-
-    catch (error) {
-
-        showAlert(error.message);
-
-    }
-
-    finally {
-
+          }, 1500);
+        }
+      } catch (err) {
         registerBtn.disabled = false;
+        registerBtn.innerHTML = '<span class="btn-text">Create Account</span>';
 
-        registerBtn.innerHTML = "Create Account";
-
-    }
-
+        if (err.status === 409) {
+          showInlineAlert("formAlert", "An account with this email already exists.");
+        } else if (err.status === 422) {
+          showInlineAlert("formAlert", err.message || "Please check your input.");
+        } else if (err.status === 400) {
+          showInlineAlert("formAlert", err.message || "Invalid request.");
+        } else {
+          showInlineAlert("formAlert", err.message || "Registration failed. Please try again.");
+        }
+      }
+    });
+  }
 });

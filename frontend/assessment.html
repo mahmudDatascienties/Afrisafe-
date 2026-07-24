@@ -48,24 +48,19 @@
       </div>
 
       <nav class="nav-links" aria-label="Main Navigation">
-        <a href="login.html" class="nav-link">Home</a>
+        <a href="dashboard.html" class="nav-link">Dashboard</a>
         <a href="assessment.html" class="nav-link active" aria-current="page">Assessment</a>
-        <a href="#" class="nav-link">About</a>
+        <a href="history.html" class="nav-link">History</a>
+        <a href="profile.html" class="nav-link">Profile</a>
       </nav>
 
       <div class="nav-actions">
-        <!-- Language Selector -->
-        <div class="lang-selector" role="group" aria-label="Language Selector">
-          <button type="button" class="lang-btn active" id="langEN" aria-pressed="true">English</button>
-          <span class="lang-divider" aria-hidden="true">|</span>
-          <button type="button" class="lang-btn" id="langHA" aria-pressed="false">Hausa</button>
-        </div>
-
-        <!-- Guest User Badge -->
+        <!-- User Session Badge -->
         <div class="user-badge" title="Active Session">
           <span class="status-dot" aria-hidden="true"></span>
-          <span class="user-text">Guest User</span>
+          <span class="user-text">User</span>
         </div>
+        <a href="#" id="logoutBtn" class="nav-link" style="color: var(--danger);">Logout</a>
       </div>
     </div>
   </header>
@@ -514,6 +509,7 @@
     </p>
   </footer>
 
+  <script src="js/config.js"></script>
   <script src="js/assessment.js"></script>
 </body>
 </html>
